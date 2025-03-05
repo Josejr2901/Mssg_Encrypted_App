@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">Encrypted Messaging</string>
+    <string name="login">Login here</string>
+    <string name="loginButton">Login</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="register_phrase">Start Your Marketplace Journey</string>
+    <string name="registerButton">Register</string>
+    <string name="click_to_login">Click to login</string>
+    <string name="click_to_register">Click to register</string>
+    <string name="logout">Logout</string>
+    <string name="profile">Profile</string>
+
+    <style name="CustomTextInputLayout">
+        <item name="android:textColorHint">#000000</item>
+    </style>
+</resources>

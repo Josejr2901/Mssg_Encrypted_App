@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="10dp"
+    android:background="@android:color/white">
+
+    <!-- Chat Partner Name -->
+    <TextView
+        android:id="@+id/chatPartnerName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Chat Partner"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="#000000"
+        android:paddingBottom="4dp"/>
+
+    <!-- Last Message -->
+    <TextView
+        android:id="@+id/lastMessage"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Last message preview"
+        android:textSize="14sp"
+        android:textColor="#757575"/>
+</LinearLayout>
