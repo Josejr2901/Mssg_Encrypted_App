@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp"
-    android:background="#F5F5F5">
+    android:background="@color/background_light">
 
     <!-- User Email Header -->
     <TextView
@@ -13,6 +13,7 @@
         android:layout_height="wrap_content"
         android:text="Logged in as: "
         android:textSize="18sp"
+        android:textColor="@color/black"
         android:textStyle="bold"
         android:paddingBottom="10dp" />
 
@@ -21,25 +22,28 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:gravity="center">
+        android:gravity="center"
+        android:paddingBottom="8dp">
 
         <Button
             android:id="@+id/newChatButton"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
+            android:layout_weight="1"
             android:layout_height="wrap_content"
             android:text="New Chat"
-            android:backgroundTint="#6200EE"
-            android:textColor="#FFFFFF"
+            android:backgroundTint="@color/primary"
+            android:textColor="@color/white"
             android:padding="10dp"
             android:layout_marginEnd="10dp"/>
 
         <Button
             android:id="@+id/logoutButton"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
+            android:layout_weight="1"
             android:layout_height="wrap_content"
             android:text="Logout"
-            android:backgroundTint="#D32F2F"
-            android:textColor="#FFFFFF"
+            android:backgroundTint="@color/danger"
+            android:textColor="@color/white"
             android:padding="10dp"/>
     </LinearLayout>
 
@@ -48,8 +52,7 @@
         android:id="@+id/chatRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="16dp"
         android:padding="8dp"
-        android:background="#FFFFFF"
-        android:elevation="4dp"/>
+        android:clipToPadding="false"
+        android:scrollbars="vertical"/>
 </LinearLayout>

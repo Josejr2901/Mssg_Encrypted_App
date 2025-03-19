@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="10dp"
+    android:background="@android:color/white"
+    android:elevation="2dp"
+    android:layout_marginBottom="8dp">
+
+    <TextView
+        android:id="@+id/chatPartnerText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Chat Partner"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="#000"/>
+
+    <TextView
+        android:id="@+id/lastMessageText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Last message preview"
+        android:textSize="14sp"
+        android:textColor="#555"/>
+
+    <TextView
+        android:id="@+id/lastMessageTimestamp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="10dp"
+        android:gravity="end"
+        android:text="10:30 PM"
+        android:textColor="#888888"
+        android:textSize="12sp" />
+
+
+</LinearLayout>

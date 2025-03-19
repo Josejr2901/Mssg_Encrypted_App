@@ -3,6 +3,8 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="purple_500">#6200EE</color>
-
+    <color name="background_light">#F5F5F5</color>
+    <color name="primary">#0083FC</color>
+    <color name="danger">#D32F2F</color>
 </resources>
 

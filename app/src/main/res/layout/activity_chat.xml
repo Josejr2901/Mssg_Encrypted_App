@@ -1,10 +1,23 @@
-<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="10dp"
     android:background="#F5F5F5">
+
+    <!-- Header displaying recipient's email -->
+    <TextView
+        android:id="@+id/recipientEmailText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Chatting with: "
+        android:textSize="18sp"
+        android:textColor="#000000"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:paddingBottom="10dp"
+        android:background="#B3D9FF"
+        android:padding="10dp"/>
 
     <!-- RecyclerView for Messages -->
     <androidx.recyclerview.widget.RecyclerView
@@ -31,6 +44,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:hint="Type a message..."
+            android:textColor="#000000"
             android:padding="10dp"
             android:background="@android:drawable/editbox_background"
             android:textSize="16sp"/>
@@ -40,8 +54,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Send"
-            android:backgroundTint="#6200EE"
-            android:textColor="#FFFFFF"
+            android:backgroundTint="#B3D9FF"
+            android:textColor="#000000"
             android:padding="10dp"
             android:layout_marginStart="10dp"/>
     </LinearLayout>

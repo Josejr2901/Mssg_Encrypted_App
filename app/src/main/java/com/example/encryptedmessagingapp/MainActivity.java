@@ -18,22 +18,28 @@ import com.example.encryptedmessagingapp.models.Message;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 
+import android.util.Log;
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import com.example.encryptedmessagingapp.adapters.ChatPreviewAdapter;
+
+
 
 public class MainActivity extends AppCompatActivity {
 
     private FirebaseAuth mAuth;
     private FirebaseUser currentUser;
-    private FirebaseFirestore db;
+    private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private TextView userEmailText;
     private Button newChatButton, logoutButton;
     private RecyclerView chatRecyclerView;
-    private ChatAdapter chatAdapter;
+    private ChatPreviewAdapter chatAdapter;
     private ArrayList<Message> messageList = new ArrayList<>();
     private String chatPartnerEmail;
 
@@ -60,8 +66,8 @@ public class MainActivity extends AppCompatActivity {
             finish();
         }
 
-        // RecyclerView setup
-        chatAdapter = new ChatAdapter(this, messageList, currentUser.getEmail());
+        // RecyclerView setup for chat previews
+        chatAdapter = new ChatPreviewAdapter(this, messageList, currentUser.getEmail());
         chatRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         chatRecyclerView.setAdapter(chatAdapter);
 
@@ -75,6 +81,7 @@ public class MainActivity extends AppCompatActivity {
 
         newChatButton.setOnClickListener(view -> startNewChat());
     }
+
 
     private void startNewChat() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -92,18 +99,43 @@ public class MainActivity extends AppCompatActivity {
                 return;
             }
 
-            // ✅ Check Firestore instead of FirebaseAuth
-            db.collection("users").document(chatPartnerEmail).get()
-                    .addOnSuccessListener(documentSnapshot -> {
-                        if (documentSnapshot.exists()) {
-                            // ✅ User exists, open chat
-                            openChatWindow(chatPartnerEmail);
+            db.collection("users").whereEqualTo("email", chatPartnerEmail).get()
+                    .addOnSuccessListener(queryDocumentSnapshots -> {
+                        if (!queryDocumentSnapshots.isEmpty()) {
+                            // ✅ User exists, create or open chat
+                            String chatId1 = currentUser.getEmail() + "_" + chatPartnerEmail;
+                            String chatId2 = chatPartnerEmail + "_" + currentUser.getEmail();
+                            String chatId = chatId1.compareTo(chatId2) < 0 ? chatId1 : chatId2;
+
+                            // ✅ Add chat to `chatList` so it appears in MainActivity
+                            Map<String, Object> chatListData = new HashMap<>();
+                            chatListData.put("users", new ArrayList<>(Arrays.asList(currentUser.getEmail(), chatPartnerEmail)));
+                            chatListData.put("user1", currentUser.getEmail());
+                            chatListData.put("user2", chatPartnerEmail);
+                            chatListData.put("lastMessage", "");  // No messages yet
+                            chatListData.put("timestamp", System.currentTimeMillis());
+
+                            db.collection("chatList").document(chatId)
+                                    .set(chatListData)
+                                    .addOnSuccessListener(aVoid -> {
+                                        Log.d("Firestore", "Chat added to chatList successfully!");
+                                        openChatWindow(chatPartnerEmail);
+                                    })
+                                    .addOnFailureListener(e -> {
+                                        Log.e("FirestoreError", "Failed to add chat to chatList", e);
+                                        Toast.makeText(MainActivity.this, "Failed to start chat", Toast.LENGTH_SHORT).show();
+                                    });
+
                         } else {
                             // ❌ User is not registered
                             Toast.makeText(MainActivity.this, "User not registered!", Toast.LENGTH_SHORT).show();
                         }
                     })
-                    .addOnFailureListener(e -> Toast.makeText(MainActivity.this, "Error checking user", Toast.LENGTH_SHORT).show());
+                    .addOnFailureListener(e -> {
+                        Log.e("FirestoreError", "Error checking user: " + e.getMessage());
+                        Toast.makeText(MainActivity.this, "Firestore error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    });
+
         });
 
         builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
@@ -117,22 +149,99 @@ public class MainActivity extends AppCompatActivity {
                 .whereArrayContains("users", currentUser.getEmail())
                 .orderBy("timestamp", Query.Direction.DESCENDING)
                 .addSnapshotListener((querySnapshot, error) -> {
-                    if (error != null) return;
+                    if (error != null) {
+                        Log.e("FirestoreError", "Error loading chats", error);
+                        return;
+                    }
+
+                    if (querySnapshot == null || querySnapshot.isEmpty()) {
+                        Log.d("Firestore", "No chats found.");
+                        return;
+                    }
 
                     messageList.clear();
                     for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
-                        String chatPartner = doc.getString("user1").equals(currentUser.getEmail())
-                                ? doc.getString("user2")
-                                : doc.getString("user1");
+                        String chatPartner;
 
-                        String lastMessage = doc.getString("lastMessage");
+                        // Get the chat partner who is NOT the current user
+                        if (doc.contains("user1") && doc.contains("user2")) {
+                            chatPartner = doc.getString("user1").equals(currentUser.getEmail()) ?
+                                    doc.getString("user2") : doc.getString("user1");
+                        } else {
+                            Log.e("FirestoreError", "Missing user1/user2 fields in document");
+                            continue;
+                        }
 
-                        Message chatPreview = new Message(currentUser.getEmail(), chatPartner, lastMessage, doc.getLong("timestamp"));
+                        String lastMessage = doc.contains("lastMessage") ? doc.getString("lastMessage") : "No messages yet";
+                        Long timestamp = doc.contains("timestamp") ? doc.getLong("timestamp") : 0;
+
+                        Log.d("Firestore", "Chat with: " + chatPartner + ", Last message: " + lastMessage);
+
+                        Message chatPreview = new Message(
+                                "", // Empty messageId because this is just a chat preview
+                                currentUser.getEmail(),
+                                chatPartner,
+                                lastMessage,
+                                timestamp,
+                                new ArrayList<>() // Empty deletedBy list
+                        );
+
                         messageList.add(chatPreview);
                     }
+
                     chatAdapter.notifyDataSetChanged();
                 });
     }
+
+//    public void deleteChat(String recipientEmail) {
+//        if (currentUser == null) return;
+//
+//        String chatId1 = currentUser.getEmail() + "_" + recipientEmail;
+//        String chatId2 = recipientEmail + "_" + currentUser.getEmail();
+//        String chatId = chatId1.compareTo(chatId2) < 0 ? chatId1 : chatId2;
+//
+//        // ✅ Remove the chat from the `chatList` only for the current user
+//        db.collection("chatList").document(chatId)
+//                .update("users", FieldValue.arrayRemove(currentUser.getEmail()))
+//                .addOnSuccessListener(aVoid -> {
+//                    Log.d("Firestore", "Chat removed for " + currentUser.getEmail());
+//                    Toast.makeText(MainActivity.this, "Chat deleted", Toast.LENGTH_SHORT).show();
+//                    loadChats(); // Refresh the RecyclerView
+//                })
+//                .addOnFailureListener(e -> {
+//                    Log.e("FirestoreError", "Error deleting chat", e);
+//                    Toast.makeText(MainActivity.this, "Error deleting chat", Toast.LENGTH_SHORT).show();
+//                });
+//    }
+
+    public void deleteChat(String recipientEmail) {
+        if (currentUser == null) return;
+
+        String chatId1 = currentUser.getEmail() + "_" + recipientEmail;
+        String chatId2 = recipientEmail + "_" + currentUser.getEmail();
+        String chatId = chatId1.compareTo(chatId2) < 0 ? chatId1 : chatId2;
+
+        // ✅ Step 1: Remove the chat from `chatList` for the current user
+        db.collection("chatList").document(chatId)
+                .update("users", FieldValue.arrayRemove(currentUser.getEmail()))
+                .addOnSuccessListener(aVoid -> Log.d("Firestore", "Chat removed for " + currentUser.getEmail()))
+                .addOnFailureListener(e -> Log.e("FirestoreError", "Error deleting chat", e));
+
+        // ✅ Step 2: Mark all messages as deleted for the current user
+        db.collection("chats").document(chatId).collection("messages")
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    for (DocumentSnapshot doc : queryDocumentSnapshots.getDocuments()) {
+                        doc.getReference().update("deletedBy", FieldValue.arrayUnion(currentUser.getEmail()));
+                    }
+                })
+                .addOnFailureListener(e -> Log.e("FirestoreError", "Error marking messages as deleted", e));
+
+        // ✅ Step 3: Refresh RecyclerView
+        Toast.makeText(MainActivity.this, "Chat deleted", Toast.LENGTH_SHORT).show();
+        loadChats();
+    }
+
 
 
     private void openChatWindow(String recipientEmail) {
@@ -141,28 +250,29 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
+
     // 🔹 Delete a chat when long-pressed
-    public void deleteChat(String recipientEmail) {
-        if (currentUser == null) return;
-
-        String chatId1 = currentUser.getEmail() + "_" + recipientEmail;
-        String chatId2 = recipientEmail + "_" + currentUser.getEmail();
-        String chatId = chatId1.compareTo(chatId2) < 0 ? chatId1 : chatId2;
-
-        // ✅ Delete the chat from Firestore
-        db.collection("chatList").document(chatId).delete();
-        db.collection("chats").document(chatId).delete()
-                .addOnSuccessListener(aVoid -> Toast.makeText(MainActivity.this, "Chat deleted", Toast.LENGTH_SHORT).show())
-                .addOnFailureListener(e -> Toast.makeText(MainActivity.this, "Error deleting chat", Toast.LENGTH_SHORT).show());
-
-        // ✅ Remove the chat from the RecyclerView
-        for (int i = 0; i < messageList.size(); i++) {
-            if (messageList.get(i).getReceiver().equals(recipientEmail)) {
-                messageList.remove(i);
-                chatAdapter.notifyItemRemoved(i);
-                break;
-            }
-        }
-    }
+//    public void deleteChat(String recipientEmail) {
+//        if (currentUser == null) return;
+//
+//        String chatId1 = currentUser.getEmail() + "_" + recipientEmail;
+//        String chatId2 = recipientEmail + "_" + currentUser.getEmail();
+//        String chatId = chatId1.compareTo(chatId2) < 0 ? chatId1 : chatId2;
+//
+//        // ✅ Delete the chat from Firestore
+//        db.collection("chatList").document(chatId).delete();
+//        db.collection("chats").document(chatId).delete()
+//                .addOnSuccessListener(aVoid -> Toast.makeText(MainActivity.this, "Chat deleted", Toast.LENGTH_SHORT).show())
+//                .addOnFailureListener(e -> Toast.makeText(MainActivity.this, "Error deleting chat", Toast.LENGTH_SHORT).show());
+//
+//        // ✅ Remove the chat from the RecyclerView
+//        for (int i = 0; i < messageList.size(); i++) {
+//            if (messageList.get(i).getReceiver().equals(recipientEmail)) {
+//                messageList.remove(i);
+//                chatAdapter.notifyItemRemoved(i);
+//                break;
+//            }
+//        }
+//    }
 
 }
