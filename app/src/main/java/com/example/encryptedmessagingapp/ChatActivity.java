@@ -133,7 +133,7 @@ private void initializeAESKey() {
                                 String decrypted = EncryptionUtils.decrypt(message.getMessage(), currentAESKey);
                                 message.setMessage(decrypted);
                             } catch (Exception e) {
-                                message.setMessage("[Encrypted]");
+                                message.setMessage("[Message Deleted]");
                                 Log.e("DecryptError", "Failed to decrypt message", e);
                             }
 
@@ -218,14 +218,33 @@ private void initializeAESKey() {
                 .addOnFailureListener(e -> Log.e("FirestoreError", "Failed to update chatList", e));
     }
 
+
     public void deleteMessage(Message message) {
         db.collection("chats").document(chatId)
                 .collection("messages").document(message.getMessageId())
                 .update("message", "[Message deleted]", "icon", null)
                 .addOnSuccessListener(aVoid -> {
                     Log.d("Firestore", "Message deleted");
+
+                    // ✅ Update local copy
+                    for (int i = 0; i < messageList.size(); i++) {
+                        Message msg = messageList.get(i);
+                        if (msg.getMessageId().equals(message.getMessageId())) {
+                            msg.setMessage("[Message deleted]");
+                            break;
+                        }
+                    }
+
+                    chatAdapter.notifyDataSetChanged(); // 🔄 Refresh UI
                     Toast.makeText(ChatActivity.this, "Message deleted", Toast.LENGTH_SHORT).show();
+
+                    // ✅ Update chatList's lastMessage so preview also says "[Message deleted]"
+                    db.collection("chatList").document(chatId)
+                            .update("lastMessage", "[Message deleted]")
+                            .addOnSuccessListener(x -> Log.d("Firestore", "ChatList preview updated"))
+                            .addOnFailureListener(e -> Log.e("FirestoreError", "Failed to update preview", e));
                 })
                 .addOnFailureListener(e -> Log.e("FirestoreError", "Error deleting message", e));
     }
+
 }

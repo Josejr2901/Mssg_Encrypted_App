@@ -242,7 +242,7 @@ public class MainActivity extends AppCompatActivity {
 
                         db.collection("keys").document(chatId).get()
                                 .addOnSuccessListener(keyDoc -> {
-                                    String decryptedLastMessage = "[Encrypted]";
+                                    String decryptedLastMessage = "[Message Deleted]";
 
                                     if (keyDoc.exists()) {
                                         String encodedKey = keyDoc.getString("aesKey");
@@ -263,7 +263,7 @@ public class MainActivity extends AppCompatActivity {
                                             new ArrayList<>()
                                     );
 
-                                    // ✅ Prevent duplicate chat previews
+                                    // Prevent duplicate chat previews
                                     boolean updated = false;
                                     for (int i = 0; i < messageList.size(); i++) {
                                         Message existing = messageList.get(i);
