@@ -1,6 +1,6 @@
 pluginManagement {
     repositories {
-        google() // ✅ Ensure Google repository is added
+        google()  
         mavenCentral()
         gradlePluginPortal()
     }
@@ -9,7 +9,7 @@ pluginManagement {
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
-        google() // ✅ Ensure Google repository is added
+        google()
         mavenCentral()
     }
 }

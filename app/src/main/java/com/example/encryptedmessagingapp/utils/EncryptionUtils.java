@@ -14,7 +14,7 @@ public class EncryptionUtils {
     private static final int GCM_IV_LENGTH = 12;
     private static final int GCM_TAG_LENGTH = 128;
 
-    // Generate a random AES key (can be shared manually or pre-configured for simplicity)
+    // Generate a random AES key
     public static SecretKey generateAESKey() throws Exception {
         KeyGenerator keyGen = KeyGenerator.getInstance(AES);
         keyGen.init(256);
@@ -29,7 +29,7 @@ public class EncryptionUtils {
         SecureRandomUtils.getRandom().nextBytes(iv);
         GCMParameterSpec spec = new GCMParameterSpec(GCM_TAG_LENGTH, iv);
 
-        cipher.init(Cipher.ENCRYPT_MODE, key, spec);  // <- might throw
+        cipher.init(Cipher.ENCRYPT_MODE, key, spec);
         byte[] encrypted = cipher.doFinal(plainText.getBytes());
 
         byte[] combined = new byte[iv.length + encrypted.length];

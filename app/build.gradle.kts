@@ -1,6 +1,6 @@
 plugins {
     alias(libs.plugins.android.application)
-    id("com.google.gms.google-services") // ✅ Apply Google Services Plugin
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -38,17 +38,14 @@ dependencies {
     implementation(libs.activity)
     implementation(libs.constraintlayout)
 
-    // ✅ Firebase Dependencies
-    implementation(platform("com.google.firebase:firebase-bom:32.1.0")) // Ensures version consistency
-    implementation("com.google.firebase:firebase-auth") // Firebase Authentication
-    implementation("com.google.firebase:firebase-firestore") // Firebase Firestore (for chat)
+    implementation(platform("com.google.firebase:firebase-bom:32.1.0"))
+    implementation("com.google.firebase:firebase-auth")
+    implementation("com.google.firebase:firebase-firestore")
     implementation("com.google.firebase:firebase-messaging")
 
-    // Testing Dependencies
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
 }
 
-// ✅ Apply Google Services Plugin at the bottom
 apply(plugin = "com.google.gms.google-services")

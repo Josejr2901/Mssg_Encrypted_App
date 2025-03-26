@@ -10,7 +10,6 @@
     <string name="click_to_register">Click to register</string>
     <string name="logout">Logout</string>
     <string name="profile">Profile</string>
-
     <style name="CustomTextInputLayout">
         <item name="android:textColorHint">#000000</item>
     </style>
