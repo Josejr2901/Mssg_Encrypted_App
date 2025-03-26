@@ -23,7 +23,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="20sp"
-        android:textColor="#0083FC"
+        android:textColor="#1F5C52"
         android:gravity="center"
         android:text="@string/login"
         android:textSize="20sp"
@@ -38,7 +38,7 @@
             android:id="@+id/email"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="#B3D9FF"
+            android:background="#31A199"
             android:textColor="#000000"
             android:hint="@string/email" />
 
@@ -54,7 +54,7 @@
             android:id="@+id/password"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="#B3D9FF"
+            android:background="#31A199"
             android:hint="@string/password"
             android:textColor="#000000"
             android:inputType="textPassword"/>
@@ -75,7 +75,7 @@
         android:layout_marginTop="10sp"
         android:layout_marginBottom="20sp"
         android:textColor="#FFFFFF"
-        android:backgroundTint="#0083FC"
+        android:backgroundTint="#1F5C52"
         android:text="@string/loginButton" />
 
     <TextView

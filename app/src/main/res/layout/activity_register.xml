@@ -9,7 +9,7 @@
     android:gravity="center"
     android:layout_height="match_parent"
     tools:context=".Register"
-    android:background="#B3D9FF">
+    android:background="#31A199">
 
     <ImageView
         android:id="@+id/imageView2"
@@ -23,7 +23,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="20sp"
-        android:textColor="#000000"
+        android:textColor="#FFFFFF"
         android:gravity="center"
         android:text="@string/register_phrase"
         android:textSize="20sp"
@@ -69,12 +69,12 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="10sp"
         android:layout_marginBottom="20sp"
-        android:backgroundTint="#0083FC"
+        android:backgroundTint="#1F5C52"
         android:text="@string/registerButton" />
 
     <TextView
         android:textStyle="bold"
-        android:textColor="#000000"
+        android:textColor="#FFFFFF"
         android:textSize="20sp"
         android:gravity="center"
         android:layout_marginBottom="20dp"

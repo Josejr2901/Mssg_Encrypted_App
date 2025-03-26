@@ -30,12 +30,18 @@ import java.util.HashMap;
 import java.util.Map;
 import com.example.encryptedmessagingapp.adapters.ChatPreviewAdapter;
 
+import android.widget.SearchView;
+
 import javax.crypto.SecretKey;
 
 
 public class MainActivity extends AppCompatActivity {
 
     private FirebaseAuth mAuth;
+
+    private SearchView searchView;
+    private ArrayList<Message> allUsersList = new ArrayList<>();
+    private boolean isSearching = false;
 
     private FirebaseUser currentUser;
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -45,6 +51,45 @@ public class MainActivity extends AppCompatActivity {
     private ChatPreviewAdapter chatAdapter;
     private ArrayList<Message> messageList = new ArrayList<>();
     private String chatPartnerEmail;
+
+//    @Override
+//    protected void onCreate(Bundle savedInstanceState) {
+//        super.onCreate(savedInstanceState);
+//        setContentView(R.layout.activity_main);
+//
+//        // Initialize Firebase
+//        mAuth = FirebaseAuth.getInstance();
+//        currentUser = mAuth.getCurrentUser();
+//        db = FirebaseFirestore.getInstance();
+//
+//        // UI References
+//        userEmailText = findViewById(R.id.userEmail);
+//        newChatButton = findViewById(R.id.newChatButton);
+//        logoutButton = findViewById(R.id.logoutButton);
+//        chatRecyclerView = findViewById(R.id.chatRecyclerView);
+//
+//        if (currentUser != null) {
+//            userEmailText.setText("Logged in as: " + currentUser.getEmail());
+//        } else {
+//            startActivity(new Intent(MainActivity.this, Login.class));
+//            finish();
+//        }
+//
+//        // RecyclerView setup for chat previews
+//        chatAdapter = new ChatPreviewAdapter(this, messageList, currentUser.getEmail());
+//        chatRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+//        chatRecyclerView.setAdapter(chatAdapter);
+//
+//        loadChats();
+//
+//        logoutButton.setOnClickListener(view -> {
+//            mAuth.signOut();
+//            startActivity(new Intent(MainActivity.this, Login.class));
+//            finish();
+//        });
+//
+//        newChatButton.setOnClickListener(view -> startNewChat());
+//    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,6 +106,14 @@ public class MainActivity extends AppCompatActivity {
         newChatButton = findViewById(R.id.newChatButton);
         logoutButton = findViewById(R.id.logoutButton);
         chatRecyclerView = findViewById(R.id.chatRecyclerView);
+        searchView = findViewById(R.id.searchView);
+
+        int searchInputId = searchView.getContext().getResources()
+                .getIdentifier("android:id/search_src_text", null, null);
+        EditText searchEditText = searchView.findViewById(searchInputId);
+        searchEditText.setTextColor(getResources().getColor(android.R.color.black));
+        searchEditText.setHintTextColor(getResources().getColor(android.R.color.darker_gray));
+
 
         if (currentUser != null) {
             userEmailText.setText("Logged in as: " + currentUser.getEmail());
@@ -74,7 +127,8 @@ public class MainActivity extends AppCompatActivity {
         chatRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         chatRecyclerView.setAdapter(chatAdapter);
 
-        loadChats();
+        loadChats();      // 👈 shows recent chats
+        loadAllUsers();   // 👈 loads user list to support search
 
         logoutButton.setOnClickListener(view -> {
             mAuth.signOut();
@@ -83,18 +137,158 @@ public class MainActivity extends AppCompatActivity {
         });
 
         newChatButton.setOnClickListener(view -> startNewChat());
+
+        // 🔁 Search input handling
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                if (newText.trim().isEmpty()) {
+                    isSearching = false;
+                    loadChats();
+                } else {
+                    isSearching = true;
+                    filterUsers(newText);
+                }
+                return true;
+            }
+        });
     }
 
+//    private void startNewChat() {
+//        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+//        builder.setTitle("Enter recipient's email");
+//
+//        final EditText input = new EditText(this);
+//        input.setHint("Recipient's Email");
+//        builder.setView(input);
+//
+//        builder.setPositiveButton("Start Chat", (dialog, which) -> {
+//            chatPartnerEmail = input.getText().toString().trim();
+//
+//            if (chatPartnerEmail.isEmpty()) {
+//                Toast.makeText(MainActivity.this, "Enter a valid email!", Toast.LENGTH_SHORT).show();
+//                return;
+//            }
+//
+//            db.collection("users").whereEqualTo("email", chatPartnerEmail).get()
+//                    .addOnSuccessListener(queryDocumentSnapshots -> {
+//                        if (!queryDocumentSnapshots.isEmpty()) {
+//                            // User exists, create or open chat
+//                            String chatId1 = currentUser.getEmail() + "_" + chatPartnerEmail;
+//                            String chatId2 = chatPartnerEmail + "_" + currentUser.getEmail();
+//                            String chatId = chatId1.compareTo(chatId2) < 0 ? chatId1 : chatId2;
+//
+//                            // Add chat to `chatList` so it appears in MainActivity
+//                            Map<String, Object> chatListData = new HashMap<>();
+//                            chatListData.put("users", new ArrayList<>(Arrays.asList(currentUser.getEmail(), chatPartnerEmail)));
+//                            chatListData.put("user1", currentUser.getEmail());
+//                            chatListData.put("user2", chatPartnerEmail);
+//                            chatListData.put("lastMessage", "");  // No messages yet
+//                            chatListData.put("timestamp", System.currentTimeMillis());
+//
+//                            db.collection("chatList").document(chatId)
+//                                    .set(chatListData)
+//                                    .addOnSuccessListener(aVoid -> {
+//                                        Log.d("Firestore", "Chat added to chatList successfully!");
+//                                        openChatWindow(chatPartnerEmail);
+//                                    })
+//                                    .addOnFailureListener(e -> {
+//                                        Log.e("FirestoreError", "Failed to add chat to chatList", e);
+//                                        Toast.makeText(MainActivity.this, "Failed to start chat", Toast.LENGTH_SHORT).show();
+//                                    });
+//
+//                        } else {
+//                            // User is not registered
+//                            Toast.makeText(MainActivity.this, "User not registered!", Toast.LENGTH_SHORT).show();
+//                        }
+//                    })
+//                    .addOnFailureListener(e -> {
+//                        Log.e("FirestoreError", "Error checking user: " + e.getMessage());
+//                        Toast.makeText(MainActivity.this, "Firestore error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+//                    });
+//
+//        });
+//
+//        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
+//        builder.show();
+//    }
+
+//    private void startNewChat() {
+//        // Inflate custom view
+//        View dialogView = getLayoutInflater().inflate(R.layout.dialog_new_chat, null);
+//        EditText input = dialogView.findViewById(R.id.recipientInput);
+//
+//        AlertDialog dialog = new AlertDialog.Builder(this)
+//                .setView(dialogView)
+//                .setPositiveButton("Start Chat", (d, which) -> {
+//                    chatPartnerEmail = input.getText().toString().trim();
+//
+//                    if (chatPartnerEmail.isEmpty()) {
+//                        Toast.makeText(MainActivity.this, "Enter a valid email!", Toast.LENGTH_SHORT).show();
+//                        return;
+//                    }
+//
+//                    db.collection("users").whereEqualTo("email", chatPartnerEmail).get()
+//                            .addOnSuccessListener(queryDocumentSnapshots -> {
+//                                if (!queryDocumentSnapshots.isEmpty()) {
+//                                    String chatId1 = currentUser.getEmail() + "_" + chatPartnerEmail;
+//                                    String chatId2 = chatPartnerEmail + "_" + currentUser.getEmail();
+//                                    String chatId = chatId1.compareTo(chatId2) < 0 ? chatId1 : chatId2;
+//
+//                                    Map<String, Object> chatListData = new HashMap<>();
+//                                    chatListData.put("users", new ArrayList<>(Arrays.asList(currentUser.getEmail(), chatPartnerEmail)));
+//                                    chatListData.put("user1", currentUser.getEmail());
+//                                    chatListData.put("user2", chatPartnerEmail);
+//                                    chatListData.put("lastMessage", "");
+//                                    chatListData.put("timestamp", System.currentTimeMillis());
+//
+//                                    db.collection("chatList").document(chatId)
+//                                            .set(chatListData)
+//                                            .addOnSuccessListener(aVoid -> {
+//                                                Log.d("Firestore", "Chat added to chatList successfully!");
+//                                                openChatWindow(chatPartnerEmail);
+//                                            })
+//                                            .addOnFailureListener(e -> {
+//                                                Log.e("FirestoreError", "Failed to add chat to chatList", e);
+//                                                Toast.makeText(MainActivity.this, "Failed to start chat", Toast.LENGTH_SHORT).show();
+//                                            });
+//                                } else {
+//                                    Toast.makeText(MainActivity.this, "User not registered!", Toast.LENGTH_SHORT).show();
+//                                }
+//                            })
+//                            .addOnFailureListener(e -> {
+//                                Log.e("FirestoreError", "Error checking user: " + e.getMessage());
+//                                Toast.makeText(MainActivity.this, "Firestore error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+//                            });
+//                })
+//                .setNegativeButton("Cancel", (d, which) -> d.dismiss())
+//                .create();
+//
+//        dialog.show();
+//    }
 
     private void startNewChat() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Enter recipient's email");
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_new_chat, null);
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setView(dialogView)
+                .create();
 
-        final EditText input = new EditText(this);
-        input.setHint("Recipient's Email");
-        builder.setView(input);
+        EditText input = dialogView.findViewById(R.id.recipientInput);
+        Button cancelBtn = dialogView.findViewById(R.id.cancelButton);
+        Button confirmBtn = dialogView.findViewById(R.id.confirmButton);
 
-        builder.setPositiveButton("Start Chat", (dialog, which) -> {
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
+
+        cancelBtn.setOnClickListener(v -> dialog.dismiss());
+
+        confirmBtn.setOnClickListener(v -> {
             chatPartnerEmail = input.getText().toString().trim();
 
             if (chatPartnerEmail.isEmpty()) {
@@ -105,45 +299,38 @@ public class MainActivity extends AppCompatActivity {
             db.collection("users").whereEqualTo("email", chatPartnerEmail).get()
                     .addOnSuccessListener(queryDocumentSnapshots -> {
                         if (!queryDocumentSnapshots.isEmpty()) {
-                            // User exists, create or open chat
                             String chatId1 = currentUser.getEmail() + "_" + chatPartnerEmail;
                             String chatId2 = chatPartnerEmail + "_" + currentUser.getEmail();
                             String chatId = chatId1.compareTo(chatId2) < 0 ? chatId1 : chatId2;
 
-                            // Add chat to `chatList` so it appears in MainActivity
                             Map<String, Object> chatListData = new HashMap<>();
                             chatListData.put("users", new ArrayList<>(Arrays.asList(currentUser.getEmail(), chatPartnerEmail)));
                             chatListData.put("user1", currentUser.getEmail());
                             chatListData.put("user2", chatPartnerEmail);
-                            chatListData.put("lastMessage", "");  // No messages yet
+                            chatListData.put("lastMessage", "");
                             chatListData.put("timestamp", System.currentTimeMillis());
 
                             db.collection("chatList").document(chatId)
                                     .set(chatListData)
                                     .addOnSuccessListener(aVoid -> {
-                                        Log.d("Firestore", "Chat added to chatList successfully!");
+                                        dialog.dismiss();
                                         openChatWindow(chatPartnerEmail);
                                     })
                                     .addOnFailureListener(e -> {
-                                        Log.e("FirestoreError", "Failed to add chat to chatList", e);
                                         Toast.makeText(MainActivity.this, "Failed to start chat", Toast.LENGTH_SHORT).show();
                                     });
-
                         } else {
-                            // User is not registered
                             Toast.makeText(MainActivity.this, "User not registered!", Toast.LENGTH_SHORT).show();
                         }
                     })
                     .addOnFailureListener(e -> {
-                        Log.e("FirestoreError", "Error checking user: " + e.getMessage());
                         Toast.makeText(MainActivity.this, "Firestore error: " + e.getMessage(), Toast.LENGTH_LONG).show();
                     });
-
         });
 
-        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
-        builder.show();
+        dialog.show();
     }
+
 
     private void loadChats() {
         db.collection("chatList")
@@ -262,5 +449,32 @@ public class MainActivity extends AppCompatActivity {
         intent.putExtra("recipientEmail", recipientEmail);
         startActivity(intent);
     }
+
+    private void loadAllUsers() {
+        db.collection("users").get()
+                .addOnSuccessListener(snapshot -> {
+                    allUsersList.clear();
+                    for (DocumentSnapshot doc : snapshot.getDocuments()) {
+                        String email = doc.getId();
+                        if (!email.equals(currentUser.getEmail())) {
+                            allUsersList.add(new Message("", currentUser.getEmail(), email, "", 0L, new ArrayList<>()));
+                        }
+                    }
+                });
+    }
+
+    private void filterUsers(String query) {
+        ArrayList<Message> filtered = new ArrayList<>();
+        for (Message user : allUsersList) {
+            if (user.getReceiver().toLowerCase().contains(query.toLowerCase())) {
+                filtered.add(user);
+            }
+        }
+
+        messageList.clear();
+        messageList.addAll(filtered);
+        chatAdapter.notifyDataSetChanged();
+    }
+
 
 }

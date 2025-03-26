@@ -4,7 +4,8 @@
     <color name="white">#FFFFFFFF</color>
     <color name="purple_500">#6200EE</color>
     <color name="background_light">#F5F5F5</color>
-    <color name="primary">#0083FC</color>
-    <color name="danger">#D32F2F</color>
+    <color name="primary">#1F5C52</color>
+    <color name="background_greenLight">#31A199</color>
+    <color name="danger">#DC5C5C</color>
 </resources>
 
