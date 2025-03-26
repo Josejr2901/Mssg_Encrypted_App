@@ -105,12 +105,12 @@ public class MainActivity extends AppCompatActivity {
             db.collection("users").whereEqualTo("email", chatPartnerEmail).get()
                     .addOnSuccessListener(queryDocumentSnapshots -> {
                         if (!queryDocumentSnapshots.isEmpty()) {
-                            // ✅ User exists, create or open chat
+                            // User exists, create or open chat
                             String chatId1 = currentUser.getEmail() + "_" + chatPartnerEmail;
                             String chatId2 = chatPartnerEmail + "_" + currentUser.getEmail();
                             String chatId = chatId1.compareTo(chatId2) < 0 ? chatId1 : chatId2;
 
-                            // ✅ Add chat to `chatList` so it appears in MainActivity
+                            // Add chat to `chatList` so it appears in MainActivity
                             Map<String, Object> chatListData = new HashMap<>();
                             chatListData.put("users", new ArrayList<>(Arrays.asList(currentUser.getEmail(), chatPartnerEmail)));
                             chatListData.put("user1", currentUser.getEmail());
@@ -130,7 +130,7 @@ public class MainActivity extends AppCompatActivity {
                                     });
 
                         } else {
-                            // ❌ User is not registered
+                            // User is not registered
                             Toast.makeText(MainActivity.this, "User not registered!", Toast.LENGTH_SHORT).show();
                         }
                     })
@@ -162,7 +162,7 @@ public class MainActivity extends AppCompatActivity {
                         return;
                     }
 
-                    messageList.clear(); // 🧹 Clear the list before re-adding
+                    messageList.clear();
 
                     for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
                         String chatPartner;
@@ -227,28 +227,6 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
-
-//    public void deleteChat(String recipientEmail) {
-//        if (currentUser == null) return;
-//
-//        String chatId1 = currentUser.getEmail() + "_" + recipientEmail;
-//        String chatId2 = recipientEmail + "_" + currentUser.getEmail();
-//        String chatId = chatId1.compareTo(chatId2) < 0 ? chatId1 : chatId2;
-//
-//        // ✅ Remove the chat from the `chatList` only for the current user
-//        db.collection("chatList").document(chatId)
-//                .update("users", FieldValue.arrayRemove(currentUser.getEmail()))
-//                .addOnSuccessListener(aVoid -> {
-//                    Log.d("Firestore", "Chat removed for " + currentUser.getEmail());
-//                    Toast.makeText(MainActivity.this, "Chat deleted", Toast.LENGTH_SHORT).show();
-//                    loadChats(); // Refresh the RecyclerView
-//                })
-//                .addOnFailureListener(e -> {
-//                    Log.e("FirestoreError", "Error deleting chat", e);
-//                    Toast.makeText(MainActivity.this, "Error deleting chat", Toast.LENGTH_SHORT).show();
-//                });
-//    }
-
     public void deleteChat(String recipientEmail) {
         if (currentUser == null) return;
 
@@ -256,13 +234,13 @@ public class MainActivity extends AppCompatActivity {
         String chatId2 = recipientEmail + "_" + currentUser.getEmail();
         String chatId = chatId1.compareTo(chatId2) < 0 ? chatId1 : chatId2;
 
-        // ✅ Step 1: Remove the chat from `chatList` for the current user
+        // Remove the chat from `chatList` for the current user
         db.collection("chatList").document(chatId)
                 .update("users", FieldValue.arrayRemove(currentUser.getEmail()))
                 .addOnSuccessListener(aVoid -> Log.d("Firestore", "Chat removed for " + currentUser.getEmail()))
                 .addOnFailureListener(e -> Log.e("FirestoreError", "Error deleting chat", e));
 
-        // ✅ Step 2: Mark all messages as deleted for the current user
+        // Mark all messages as deleted for the current user
         db.collection("chats").document(chatId).collection("messages")
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
@@ -272,7 +250,7 @@ public class MainActivity extends AppCompatActivity {
                 })
                 .addOnFailureListener(e -> Log.e("FirestoreError", "Error marking messages as deleted", e));
 
-        // ✅ Step 3: Refresh RecyclerView
+        //  Refresh RecyclerView
         Toast.makeText(MainActivity.this, "Chat deleted", Toast.LENGTH_SHORT).show();
         loadChats();
     }
@@ -284,30 +262,5 @@ public class MainActivity extends AppCompatActivity {
         intent.putExtra("recipientEmail", recipientEmail);
         startActivity(intent);
     }
-
-
-    // 🔹 Delete a chat when long-pressed
-//    public void deleteChat(String recipientEmail) {
-//        if (currentUser == null) return;
-//
-//        String chatId1 = currentUser.getEmail() + "_" + recipientEmail;
-//        String chatId2 = recipientEmail + "_" + currentUser.getEmail();
-//        String chatId = chatId1.compareTo(chatId2) < 0 ? chatId1 : chatId2;
-//
-//        // ✅ Delete the chat from Firestore
-//        db.collection("chatList").document(chatId).delete();
-//        db.collection("chats").document(chatId).delete()
-//                .addOnSuccessListener(aVoid -> Toast.makeText(MainActivity.this, "Chat deleted", Toast.LENGTH_SHORT).show())
-//                .addOnFailureListener(e -> Toast.makeText(MainActivity.this, "Error deleting chat", Toast.LENGTH_SHORT).show());
-//
-//        // ✅ Remove the chat from the RecyclerView
-//        for (int i = 0; i < messageList.size(); i++) {
-//            if (messageList.get(i).getReceiver().equals(recipientEmail)) {
-//                messageList.remove(i);
-//                chatAdapter.notifyItemRemoved(i);
-//                break;
-//            }
-//        }
-//    }
 
 }

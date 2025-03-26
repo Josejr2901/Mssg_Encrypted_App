@@ -3,12 +3,12 @@ package com.example.encryptedmessagingapp.models;
 import java.util.List;
 
 public class Message {
-    private String messageId; // ✅ Unique Firestore ID for the message
+    private String messageId; // Unique Firestore ID for the message
     private String sender;
     private String receiver;
     private String message;
     private long timestamp;
-    private List<String> deletedBy; // ✅ Tracks users who deleted the message
+    private List<String> deletedBy; // Tracks users who deleted the message
 
     // Default constructor (needed for Firebase)
     public Message() {}
@@ -23,7 +23,7 @@ public class Message {
         this.deletedBy = deletedBy;
     }
 
-    // ✅ Getter and Setter for messageId
+    // Getter and Setter for messageId
     public String getMessageId() {
         return messageId;
     }
@@ -32,7 +32,7 @@ public class Message {
         this.messageId = messageId;
     }
 
-    // ✅ Getter and Setter for sender
+    // Getter and Setter for sender
     public String getSender() {
         return sender;
     }
@@ -41,7 +41,7 @@ public class Message {
         this.sender = sender;
     }
 
-    // ✅ Getter and Setter for receiver
+    // Getter and Setter for receiver
     public String getReceiver() {
         return receiver;
     }
@@ -50,7 +50,7 @@ public class Message {
         this.receiver = receiver;
     }
 
-    // ✅ Getter and Setter for message
+    // Getter and Setter for message
     public String getMessage() {
         return message;
     }
@@ -59,7 +59,7 @@ public class Message {
         this.message = message;
     }
 
-    // ✅ Getter and Setter for timestamp
+    // Getter and Setter for timestamp
     public long getTimestamp() {
         return timestamp;
     }
@@ -68,7 +68,7 @@ public class Message {
         this.timestamp = timestamp;
     }
 
-    // ✅ Getter and Setter for deletedBy list
+    // Getter and Setter for deletedBy list
     public List<String> getDeletedBy() {
         return deletedBy;
     }
