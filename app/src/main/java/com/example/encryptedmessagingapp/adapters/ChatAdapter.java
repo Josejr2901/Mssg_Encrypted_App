@@ -52,13 +52,14 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         Message message = messageList.get(position);
+        boolean isSentByCurrentUser = message.getSender().equals(currentUserEmail);
 
         if (holder instanceof SentMessageViewHolder) {
             SentMessageViewHolder sentHolder = (SentMessageViewHolder) holder;
-            setMessageAppearance(sentHolder.sentMessageText, message);
+            setMessageAppearance(sentHolder.sentMessageText, message, true);
         } else if (holder instanceof ReceivedMessageViewHolder) {
             ReceivedMessageViewHolder receivedHolder = (ReceivedMessageViewHolder) holder;
-            setMessageAppearance(receivedHolder.receivedMessageText, message);
+            setMessageAppearance(receivedHolder.receivedMessageText, message, false);
         }
 
         // ✅ Handle long-press for message deletion
@@ -88,17 +89,36 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     }
 
     // ✅ Method to handle message appearance (deleted message style)
-    private void setMessageAppearance(TextView messageTextView, Message message) {
+//    private void setMessageAppearance(TextView messageTextView, Message message) {
+//        if (message.getMessage() == null || message.getMessage().equals("[Message deleted]")) {
+//            messageTextView.setText("[Message deleted]");
+//            messageTextView.setTypeface(null, Typeface.ITALIC);
+//            messageTextView.setTextColor(Color.GRAY);
+//        } else {
+//            messageTextView.setText(message.getMessage());
+//            messageTextView.setTypeface(null, Typeface.NORMAL);
+//            messageTextView.setTextColor(Color.WHITE);
+//        }
+//    }
+
+    private void setMessageAppearance(TextView messageTextView, Message message, boolean isSentByCurrentUser) {
         if (message.getMessage() == null || message.getMessage().equals("[Message deleted]")) {
             messageTextView.setText("[Message deleted]");
             messageTextView.setTypeface(null, Typeface.ITALIC);
-            messageTextView.setTextColor(Color.GRAY);
+            messageTextView.setTextColor(Color.GRAY);  // Always gray for deleted messages
         } else {
             messageTextView.setText(message.getMessage());
             messageTextView.setTypeface(null, Typeface.NORMAL);
-            //messageTextView.setTextColor(Color.BLACK);
+
+            // Apply correct color based on who sent the message
+            if (isSentByCurrentUser) {
+                messageTextView.setTextColor(Color.WHITE);  // For current user's sent messages
+            } else {
+                messageTextView.setTextColor(Color.BLACK);  // For received messages
+            }
         }
     }
+
 
     // ✅ ViewHolder for sent messages
     static class SentMessageViewHolder extends RecyclerView.ViewHolder {

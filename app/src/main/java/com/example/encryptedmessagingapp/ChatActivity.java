@@ -287,26 +287,64 @@ public class ChatActivity extends AppCompatActivity {
                         existingMessageIds.add(msg.getTimestamp() + "_" + msg.getSender());
                     }
 
+//                    for (DocumentChange dc : queryDocumentSnapshots.getDocumentChanges()) {
+//                        if (dc.getType() == DocumentChange.Type.ADDED) {
+//                            Message message = dc.getDocument().toObject(Message.class);
+//
+//                            // ✅ Skip messages that already exist
+//                            String messageKey = message.getTimestamp() + "_" + message.getSender();
+//                            if (existingMessageIds.contains(messageKey)) {
+//                                continue;
+//                            }
+//
+//                            // ✅ Ignore messages that were deleted by this user
+//                            List<String> deletedBy = (List<String>) dc.getDocument().get("deletedBy");
+//                            if (deletedBy != null && deletedBy.contains(currentUser.getEmail())) {
+//                                continue;
+//                            }
+//
+//                            messageList.add(message);
+//                            existingMessageIds.add(messageKey);
+//                        }
+//                    }
+
                     for (DocumentChange dc : queryDocumentSnapshots.getDocumentChanges()) {
-                        if (dc.getType() == DocumentChange.Type.ADDED) {
-                            Message message = dc.getDocument().toObject(Message.class);
+                        Message message = dc.getDocument().toObject(Message.class);
 
-                            // ✅ Skip messages that already exist
-                            String messageKey = message.getTimestamp() + "_" + message.getSender();
-                            if (existingMessageIds.contains(messageKey)) {
-                                continue;
-                            }
+                        String messageKey = message.getTimestamp() + "_" + message.getSender();
 
-                            // ✅ Ignore messages that were deleted by this user
-                            List<String> deletedBy = (List<String>) dc.getDocument().get("deletedBy");
-                            if (deletedBy != null && deletedBy.contains(currentUser.getEmail())) {
-                                continue;
-                            }
+                        switch (dc.getType()) {
+                            case ADDED:
+                                // Add only if it's not already in the list
+                                boolean alreadyExists = false;
+                                for (Message m : messageList) {
+                                    if (m.getTimestamp() == message.getTimestamp()
+                                            && m.getSender().equals(message.getSender())) {
+                                        alreadyExists = true;
+                                        break;
+                                    }
+                                }
+                                if (!alreadyExists) {
+                                    messageList.add(message);
+                                    chatAdapter.notifyItemInserted(messageList.size() - 1);
+                                }
+                                break;
 
-                            messageList.add(message);
-                            existingMessageIds.add(messageKey);
+                            case MODIFIED:
+                                // Update existing message in the list
+                                for (int i = 0; i < messageList.size(); i++) {
+                                    Message existing = messageList.get(i);
+                                    if (existing.getTimestamp() == message.getTimestamp()
+                                            && existing.getSender().equals(message.getSender())) {
+                                        messageList.set(i, message);
+                                        chatAdapter.notifyItemChanged(i);
+                                        break;
+                                    }
+                                }
+                                break;
                         }
                     }
+
 
                     chatAdapter.notifyDataSetChanged();
 
