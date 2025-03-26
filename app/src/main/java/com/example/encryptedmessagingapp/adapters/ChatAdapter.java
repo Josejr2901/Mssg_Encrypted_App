@@ -61,7 +61,7 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             setMessageAppearance(receivedHolder.receivedMessageText, message);
         }
 
-        // ✅ Handle long-press for message deletion
+        // Handle long-press for message deletion
         holder.itemView.setOnLongClickListener(v -> {
             new AlertDialog.Builder(context)
                     .setTitle("Delete Message")
@@ -87,7 +87,7 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         notifyItemInserted(messageList.size() - 1);
     }
 
-    // ✅ Method to handle message appearance (deleted message style)
+    // Method to handle message appearance (deleted message style)
     private void setMessageAppearance(TextView messageTextView, Message message) {
         if (message.getMessage() == null || message.getMessage().equals("[Message deleted]")) {
             messageTextView.setText("[Message deleted]");
@@ -100,7 +100,7 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         }
     }
 
-    // ✅ ViewHolder for sent messages
+    // ViewHolder for sent messages
     static class SentMessageViewHolder extends RecyclerView.ViewHolder {
         TextView sentMessageText;
 
@@ -110,7 +110,7 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         }
     }
 
-    // ✅ ViewHolder for received messages
+    // ViewHolder for received messages
     static class ReceivedMessageViewHolder extends RecyclerView.ViewHolder {
         TextView receivedMessageText;
 

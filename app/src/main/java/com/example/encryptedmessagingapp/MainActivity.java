@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.encryptedmessagingapp.adapters.ChatAdapter;
 import com.example.encryptedmessagingapp.models.Message;
+import com.example.encryptedmessagingapp.utils.EncryptionUtils;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -29,11 +30,13 @@ import java.util.HashMap;
 import java.util.Map;
 import com.example.encryptedmessagingapp.adapters.ChatPreviewAdapter;
 
+import javax.crypto.SecretKey;
 
 
 public class MainActivity extends AppCompatActivity {
 
     private FirebaseAuth mAuth;
+
     private FirebaseUser currentUser;
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private TextView userEmailText;
@@ -142,8 +145,6 @@ public class MainActivity extends AppCompatActivity {
         builder.show();
     }
 
-
-
     private void loadChats() {
         db.collection("chatList")
                 .whereArrayContains("users", currentUser.getEmail())
@@ -153,45 +154,79 @@ public class MainActivity extends AppCompatActivity {
                         Log.e("FirestoreError", "Error loading chats", error);
                         return;
                     }
- //Comment
+
                     if (querySnapshot == null || querySnapshot.isEmpty()) {
                         Log.d("Firestore", "No chats found.");
+                        messageList.clear();
+                        chatAdapter.notifyDataSetChanged();
                         return;
                     }
 
-                    messageList.clear();
+                    messageList.clear(); // 🧹 Clear the list before re-adding
+
                     for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
                         String chatPartner;
 
-                        // Get the chat partner who is NOT the current user
                         if (doc.contains("user1") && doc.contains("user2")) {
-                            chatPartner = doc.getString("user1").equals(currentUser.getEmail()) ?
-                                    doc.getString("user2") : doc.getString("user1");
+                            chatPartner = doc.getString("user1").equals(currentUser.getEmail())
+                                    ? doc.getString("user2") : doc.getString("user1");
                         } else {
                             Log.e("FirestoreError", "Missing user1/user2 fields in document");
                             continue;
                         }
 
-                        String lastMessage = doc.contains("lastMessage") ? doc.getString("lastMessage") : "No messages yet";
+                        String lastMessageRaw = doc.contains("lastMessage") ? doc.getString("lastMessage") : "No messages yet";
                         Long timestamp = doc.contains("timestamp") ? doc.getLong("timestamp") : 0;
 
-                        Log.d("Firestore", "Chat with: " + chatPartner + ", Last message: " + lastMessage);
+                        String chatId1 = currentUser.getEmail() + "_" + chatPartner;
+                        String chatId2 = chatPartner + "_" + currentUser.getEmail();
+                        String chatId = chatId1.compareTo(chatId2) < 0 ? chatId1 : chatId2;
 
-                        Message chatPreview = new Message(
-                                "", // Empty messageId because this is just a chat preview
-                                currentUser.getEmail(),
-                                chatPartner,
-                                lastMessage,
-                                timestamp,
-                                new ArrayList<>() // Empty deletedBy list
-                        );
+                        db.collection("keys").document(chatId).get()
+                                .addOnSuccessListener(keyDoc -> {
+                                    String decryptedLastMessage = "[Encrypted]";
 
-                        messageList.add(chatPreview);
+                                    if (keyDoc.exists()) {
+                                        String encodedKey = keyDoc.getString("aesKey");
+                                        try {
+                                            SecretKey key = EncryptionUtils.decodeKey(encodedKey);
+                                            decryptedLastMessage = EncryptionUtils.decrypt(lastMessageRaw, key);
+                                        } catch (Exception e) {
+                                            Log.e("PreviewDecrypt", "Failed to decrypt lastMessage", e);
+                                        }
+                                    }
+
+                                    Message chatPreview = new Message(
+                                            "", // messageId
+                                            currentUser.getEmail(),
+                                            chatPartner,
+                                            decryptedLastMessage,
+                                            timestamp,
+                                            new ArrayList<>()
+                                    );
+
+                                    // ✅ Prevent duplicate chat previews
+                                    boolean updated = false;
+                                    for (int i = 0; i < messageList.size(); i++) {
+                                        Message existing = messageList.get(i);
+                                        if (existing.getReceiver().equals(chatPartner)) {
+                                            messageList.set(i, chatPreview);
+                                            updated = true;
+                                            break;
+                                        }
+                                    }
+
+                                    if (!updated) {
+                                        messageList.add(chatPreview);
+                                    }
+
+                                    chatAdapter.notifyDataSetChanged();
+                                })
+                                .addOnFailureListener(e -> Log.e("FirestoreError", "Failed to fetch AES key", e));
                     }
-
-                    chatAdapter.notifyDataSetChanged();
                 });
     }
+
 
 //    public void deleteChat(String recipientEmail) {
 //        if (currentUser == null) return;

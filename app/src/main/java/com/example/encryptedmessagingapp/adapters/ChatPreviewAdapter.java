@@ -41,33 +41,6 @@ public class ChatPreviewAdapter extends RecyclerView.Adapter<ChatPreviewAdapter.
         return new ChatViewHolder(view);
     }
 
-//    @Override
-//    public void onBindViewHolder(@NonNull ChatViewHolder holder, int position) {
-//        Message chatPreview = chatList.get(position);
-//        holder.chatPartnerText.setText(chatPreview.getReceiver());
-//        holder.lastMessageText.setText(chatPreview.getMessage());
-//
-////        holder.itemView.setOnClickListener(v -> {
-////            Intent intent = new Intent(context, ChatActivity.class);
-////            intent.putExtra("recipientEmail", chatPreview.getReceiver());
-////            context.startActivity(intent);
-////        });
-//        holder.itemView.setOnLongClickListener(v -> {
-//            new AlertDialog.Builder(context)
-//                    .setTitle("Delete Chat")
-//                    .setMessage("Are you sure you want to delete this chat?")
-//                    .setPositiveButton("Yes", (dialog, which) -> {
-//                        if (context instanceof MainActivity) {
-//                            ((MainActivity) context).deleteChat(chatPreview.getReceiver());
-//                        }
-//                    })
-//                    .setNegativeButton("No", null)
-//                    .show();
-//            return true; // Return true to indicate long-press event is handled
-//        });
-//
-//    }
-
     @Override
     public void onBindViewHolder(@NonNull ChatViewHolder holder, int position) {
         Message chatPreview = chatList.get(position);
@@ -122,7 +95,7 @@ public class ChatPreviewAdapter extends RecyclerView.Adapter<ChatPreviewAdapter.
             super(itemView);
             chatPartnerText = itemView.findViewById(R.id.chatPartnerText);
             lastMessageText = itemView.findViewById(R.id.lastMessageText);
-            lastMessageTimestamp = itemView.findViewById(R.id.lastMessageTimestamp); // ✅ Add this
+            lastMessageTimestamp = itemView.findViewById(R.id.lastMessageTimestamp);
         }
     }
 
