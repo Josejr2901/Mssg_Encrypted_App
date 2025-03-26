@@ -64,16 +64,6 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
         // Handle long-press for message deletion
         holder.itemView.setOnLongClickListener(v -> {
-//            new AlertDialog.Builder(context)
-//                    .setTitle("Delete Message")
-//                    .setMessage("Are you sure you want to delete this message for both users?")
-//                    .setPositiveButton("Yes", (dialog, which) -> {
-//                        if (context instanceof ChatActivity) {
-//                            ((ChatActivity) context).deleteMessage(message);
-//                        }
-//                    })
-//                    .setNegativeButton("No", null)
-//                    .show();
             View dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_delete_message, null);
             AlertDialog dialog = new AlertDialog.Builder(context).create();
             dialog.setView(dialogView);

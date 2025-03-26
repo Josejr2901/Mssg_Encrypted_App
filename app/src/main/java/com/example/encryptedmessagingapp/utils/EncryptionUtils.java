@@ -1,4 +1,3 @@
-// EncryptionUtils.java
 package com.example.encryptedmessagingapp.utils;
 
 import android.util.Base64;

@@ -70,9 +70,9 @@ public class ChatActivity extends AppCompatActivity {
         String chatId2 = recipientEmail + "_" + currentUser.getEmail();
         chatId = chatId1.compareTo(chatId2) < 0 ? chatId1 : chatId2;
 
-        initializeAESKey(); // 🔐 Load or create encryption key
+        initializeAESKey(); // Load or create encryption key
 
-        sendButton.setEnabled(true); // ✅ Ready to send
+        sendButton.setEnabled(true); // Ready to send
         sendButton.setOnClickListener(view -> sendMessage());
 
     }
@@ -226,7 +226,6 @@ private void initializeAESKey() {
                 .addOnSuccessListener(aVoid -> {
                     Log.d("Firestore", "Message deleted");
 
-                    // ✅ Update local copy
                     for (int i = 0; i < messageList.size(); i++) {
                         Message msg = messageList.get(i);
                         if (msg.getMessageId().equals(message.getMessageId())) {
@@ -235,10 +234,9 @@ private void initializeAESKey() {
                         }
                     }
 
-                    chatAdapter.notifyDataSetChanged(); // 🔄 Refresh UI
+                    chatAdapter.notifyDataSetChanged();
                     Toast.makeText(ChatActivity.this, "Message deleted", Toast.LENGTH_SHORT).show();
 
-                    // ✅ Update chatList's lastMessage so preview also says "[Message deleted]"
                     db.collection("chatList").document(chatId)
                             .update("lastMessage", "[Message deleted]")
                             .addOnSuccessListener(x -> Log.d("Firestore", "ChatList preview updated"))

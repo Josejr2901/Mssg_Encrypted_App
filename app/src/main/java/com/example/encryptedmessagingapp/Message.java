@@ -3,14 +3,13 @@ package com.example.encryptedmessagingapp.models;
 import java.util.List;
 
 public class Message {
-    private String messageId; // Unique Firestore ID for the message
+    private String messageId;
     private String sender;
     private String receiver;
     private String message;
     private long timestamp;
-    private List<String> deletedBy; // Tracks users who deleted the message
+    private List<String> deletedBy;
 
-    // Default constructor (needed for Firebase)
     public Message() {}
 
     // Constructor for creating a new message

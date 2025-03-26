@@ -4,7 +4,6 @@
     android:orientation="vertical"
     android:background="#ECECEC">
 
-    <!-- Header -->
     <TextView
         android:id="@+id/recipientEmailText"
         android:layout_width="match_parent"
@@ -18,7 +17,6 @@
         android:background="#31A199"
         android:elevation="4dp"/>
 
-    <!-- Messages -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/chatRecyclerView"
         android:layout_width="match_parent"
@@ -29,7 +27,6 @@
         android:scrollbars="vertical"
         android:background="#FAFAFA"/>
 
-    <!-- Input -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

@@ -64,7 +64,7 @@ public class Login extends AppCompatActivity {
         buttonLogin.setOnClickListener(view -> loginUser());
     }
 
-    // 🔹 Login Function
+    // Login Function
     private void loginUser() {
         String email = editTextEmail.getText().toString().trim();
         String password = editTextPassword.getText().toString().trim();
@@ -97,7 +97,7 @@ public class Login extends AppCompatActivity {
                 });
     }
 
-    // 🔹 Navigate to Main Activity
+    // Navigate to Main Activity
     private void navigateToMain() {
         Intent intent = new Intent(Login.this, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
