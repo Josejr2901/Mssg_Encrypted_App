@@ -62,18 +62,12 @@ public class ChatPreviewAdapter extends RecyclerView.Adapter<ChatPreviewAdapter.
         });
 
         holder.itemView.setOnLongClickListener(v -> {
-            new AlertDialog.Builder(context)
-                    .setTitle("Delete Chat")
-                    .setMessage("Are you sure you want to delete this chat?")
-                    .setPositiveButton("Yes", (dialog, which) -> {
-                        if (context instanceof MainActivity) {
-                            ((MainActivity) context).deleteChat(chatPreview.getReceiver());
-                        }
-                    })
-                    .setNegativeButton("No", null)
-                    .show();
+            if (context instanceof MainActivity) {
+                ((MainActivity) context).showDeleteConfirmationDialog(chatPreview.getReceiver());
+            }
             return true;
         });
+
     }
 
 
