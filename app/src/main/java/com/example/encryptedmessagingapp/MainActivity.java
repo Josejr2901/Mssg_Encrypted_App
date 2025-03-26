@@ -153,7 +153,7 @@ public class MainActivity extends AppCompatActivity {
                         Log.e("FirestoreError", "Error loading chats", error);
                         return;
                     }
-
+ //Comment
                     if (querySnapshot == null || querySnapshot.isEmpty()) {
                         Log.d("Firestore", "No chats found.");
                         return;
